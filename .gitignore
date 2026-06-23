@@ -1,0 +1,4 @@
+.env
+data/birthdays.db
+__pycache__/
+*.pyc

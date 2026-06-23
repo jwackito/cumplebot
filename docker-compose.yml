@@ -1,0 +1,11 @@
+services:
+  cumplebot:
+    build: .
+    container_name: cumplebot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./bot:/app/bot
+      - ./db:/app/db
+      - ./data:/app/data
