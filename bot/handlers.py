@@ -240,6 +240,7 @@ async def remove_birthday(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 async def list_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    tg_id = update.effective_user.id
     session = context.bot_data["session_factory"]()
     try:
         persons = repo.get_all_persons(session)
@@ -249,6 +250,8 @@ async def list_birthdays(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         lines = ["Registered birthdays:\n"]
         for p in sorted(persons, key=lambda x: (x.birthday.month, x.birthday.day)):
+            if p.is_private and p.registered_by_tg_id != tg_id:
+                continue
             msg = f" - {p.name}: {p.birthday.strftime('%d %B')}"
             if p.custom_message:
                 msg += f"  ({p.custom_message})"
