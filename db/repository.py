@@ -19,7 +19,7 @@ def add_person(session, name, birthday, registered_by, message=None, is_private=
     return person
 
 
-def update_person(session, person, name=None, birthday=None, custom_message=_UNSET):
+def update_person(session, person, name=None, birthday=None, custom_message=UNSET):
     if name is not None:
         person.name = name
     if birthday is not None:
