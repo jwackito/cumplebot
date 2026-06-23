@@ -4,7 +4,7 @@ A Telegram bot that registers birthdays and sends private reminders to subscribe
 
 ## Features
 
-- Register birthdays with multi-word names (e.g. `Luciana Tanevich`)
+- Register birthdays with multi-word names (e.g. `Joaquin Bogado`)
 - Private and public birthdays (`--private` flag)
 - Per-user notification time (each subscriber chooses when to be reminded)
 - Custom birthday messages with `{name}` placeholder
@@ -52,19 +52,19 @@ docker compose up -d
 ## Examples
 
 ```text
-/add_birthday Luciana Tanevich 1998-11-09
+/add_birthday Joaquin Bogado 1983-07-27
 → Registered publicly, all users auto-subscribed
 
-/add_birthday John Doe 1990-06-15 --private Happy birthday {name}!
+/add_birthday Joaquin Bogado 1983-07-27 --private Happy birthday {name}!
 → Registered privately, only you subscribed with a custom message
 
-/subscribe Luciana Tanevich
-→ Subscribe to Luciana's birthday reminders
+/subscribe Joaquin Bogado
+→ Subscribe to Joaquin's birthday reminders
 
 /set_time 09:00
 → Get reminded at 9 AM
 
-/set_message Luciana Tanevich -- Happy {name} day!
+/set_message Joaquin Bogado -- Happy {name} day!
 → Custom message with name placeholder
 ```
 
