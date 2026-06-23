@@ -20,6 +20,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Send me a message to get started, and I'll notify you privately when someone's birthday arrives.\n\n"
         "Commands:\n"
         "/add_birthday <name> <YYYY-MM-DD> [message] - Register a birthday (use --private to restrict)\n"
+        "/edit_birthday <name> [-n <name>] [-d <YYYY-MM-DD>] [-m <message>] - Edit a birthday\n"
         "/remove_birthday <name> - Remove a registered birthday\n"
         "/list_birthdays - Show all registered birthdays\n"
         "/subscribe <name> - Subscribe to someone's birthday reminders\n"
@@ -122,6 +123,101 @@ async def add_birthday(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 f"Birthday registered for {name} ({birthday.strftime('%d %B %Y')})! 🎉\n"
                 "All users have been auto-subscribed."
             )
+    finally:
+        session.close()
+
+
+async def edit_birthday(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if not context.args:
+        await update.message.reply_text(
+            "Usage: /edit_birthday <name> [-n <newname>] [-d <YYYY-MM-DD>] [-m <message>]\n"
+            "Use -m without a value to clear the custom message."
+        )
+        return
+
+    name_parts = []
+    current_flag = None
+    current_value = []
+    flags = {}
+
+    i = 0
+    while i < len(context.args) and context.args[i] not in ("-n", "-d", "-m"):
+        name_parts.append(context.args[i])
+        i += 1
+
+    name = " ".join(name_parts)
+
+    while i < len(context.args):
+        arg = context.args[i]
+        if arg in ("-n", "-d", "-m"):
+            if current_flag:
+                flags[current_flag] = " ".join(current_value)
+            current_flag = arg
+            current_value = []
+        else:
+            current_value.append(arg)
+        i += 1
+
+    if current_flag:
+        flags[current_flag] = " ".join(current_value)
+
+    if not name:
+        await update.message.reply_text("Please specify a name.")
+        return
+
+    session = context.bot_data["session_factory"]()
+    try:
+        person = repo.get_person(session, name)
+        if not person:
+            await update.message.reply_text(f"No birthday found for {name}.")
+            return
+
+        if not flags:
+            info = (
+                f"{person.name}: {person.birthday.strftime('%d %B %Y')}\n"
+                f"Message: {person.custom_message or '(none)'}\n"
+                f"Private: {'Yes' if person.is_private else 'No'}"
+            )
+            await update.message.reply_text(info)
+            return
+
+        new_name = flags.get("-n")
+        date_str = flags.get("-d")
+        message = flags.get("-m")
+
+        birthday = None
+        if date_str is not None:
+            try:
+                birthday = datetime.strptime(date_str, "%Y-%m-%d").date()
+            except ValueError:
+                await update.message.reply_text("Invalid date format. Use YYYY-MM-DD (e.g. 1990-01-15)")
+                return
+
+        new_name_value = new_name if new_name else None
+
+        if new_name_value and new_name_value != person.name:
+            existing = repo.get_person(session, new_name_value)
+            if existing:
+                await update.message.reply_text(f"{new_name_value} is already registered.")
+                return
+
+        repo.update_person(
+            session,
+            person,
+            name=new_name_value,
+            birthday=birthday,
+            custom_message=message if "-m" in flags else repo.UNSET,
+        )
+
+        changes = []
+        if new_name_value:
+            changes.append(f"name → {new_name_value}")
+        if birthday:
+            changes.append(f"date → {birthday.strftime('%d %B %Y')}")
+        if "-m" in flags:
+            changes.append("message cleared" if not message else "message updated")
+
+        await update.message.reply_text(f"Updated {', '.join(changes)}! ✅")
     finally:
         session.close()
 

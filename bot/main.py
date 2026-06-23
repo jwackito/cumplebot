@@ -12,6 +12,7 @@ from telegram.ext import Application, CommandHandler
 from db.models import Base
 from bot.handlers import (
     add_birthday,
+    edit_birthday,
     help_command,
     list_birthdays,
     my_subscriptions,
@@ -43,6 +44,7 @@ async def post_init(application: Application) -> None:
     await application.bot.set_my_commands([
         BotCommand("start", "Welcome message and help"),
         BotCommand("add_birthday", "Register a birthday [name] [YYYY-MM-DD]"),
+        BotCommand("edit_birthday", "Edit a birthday [name] [-n] [-d] [-m]"),
         BotCommand("remove_birthday", "Remove a registered birthday [name]"),
         BotCommand("list_birthdays", "Show all registered birthdays"),
         BotCommand("subscribe", "Subscribe to someone [name]"),
@@ -100,6 +102,7 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", help_command))
     application.add_handler(CommandHandler("add_birthday", add_birthday))
+    application.add_handler(CommandHandler("edit_birthday", edit_birthday))
     application.add_handler(CommandHandler("remove_birthday", remove_birthday))
     application.add_handler(CommandHandler("list_birthdays", list_birthdays))
     application.add_handler(CommandHandler("subscribe", subscribe))

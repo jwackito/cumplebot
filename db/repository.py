@@ -3,6 +3,9 @@ from sqlalchemy import func
 from .models import BotUser, Person, Subscription, UserPreference
 
 
+UNSET = object()
+
+
 def add_person(session, name, birthday, registered_by, message=None, is_private=False):
     person = Person(
         name=name,
@@ -12,6 +15,17 @@ def add_person(session, name, birthday, registered_by, message=None, is_private=
         registered_by_tg_id=registered_by,
     )
     session.add(person)
+    session.commit()
+    return person
+
+
+def update_person(session, person, name=None, birthday=None, custom_message=_UNSET):
+    if name is not None:
+        person.name = name
+    if birthday is not None:
+        person.birthday = birthday
+    if custom_message is not UNSET:
+        person.custom_message = custom_message
     session.commit()
     return person
 
